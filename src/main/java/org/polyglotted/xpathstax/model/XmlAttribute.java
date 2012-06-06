@@ -111,6 +111,11 @@ public class XmlAttribute {
         });
     }
 
+    @Override
+    public String toString() {
+        return buffer.toString();
+    }
+    
     private static String buildKey(String name) {
         return new StringBuilder().append(NP_SPACE).append(checkNotNull(name)).append(EQUALS).toString();
     }

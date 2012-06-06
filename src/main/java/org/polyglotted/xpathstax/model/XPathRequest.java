@@ -88,12 +88,15 @@ public class XPathRequest {
     }
 
     public boolean canProcess(String elemName, XmlAttribute elementAttribute, AttributeProvider provider) {
-        checkNotNull(elemName, "elementname cannot be null");
-        if (elemName.equals(this.elementName) || includeChildren && elemName.startsWith(this.elementName)) {
+        if (isElementEquals(elemName) || includeChildren && elemName.startsWith(this.elementName)) {
             return findParentAttributes(elementAttribute, provider);
         }
 
         return false;
+    }
+
+    public boolean isElementEquals(String elemName) {
+        return checkNotNull(elemName, "elementname cannot be null").equals(this.elementName);
     }
 
     private boolean findParentAttributes(XmlAttribute elementAttribute, AttributeProvider provider) {

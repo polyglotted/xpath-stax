@@ -13,6 +13,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 import org.polyglotted.xpathstax.api.NodeHandler;
+import org.polyglotted.xpathstax.bind.NodeConverter;
 import org.polyglotted.xpathstax.model.XPathRequest;
 import org.polyglotted.xpathstax.model.XmlAttribute;
 
@@ -28,6 +29,10 @@ public class XPathStaxParser {
 
     public void addHandler(XPathRequest request, NodeHandler handler) {
         handlersMap.put(checkNotNull(request), checkNotNull(handler));
+    }
+
+    public <T> void addHandler(NodeConverter<T> converter) {
+        handlersMap.put(checkNotNull(converter.getRequest()), checkNotNull(converter));
     }
 
     public void parse(InputStream inputStream) {

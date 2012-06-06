@@ -4,8 +4,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.polyglotted.xpathstax.api.NodeHandler;
+import org.polyglotted.xpathstax.bind.Book;
+import org.polyglotted.xpathstax.bind.NodeConverter;
 import org.polyglotted.xpathstax.model.Value;
 import org.polyglotted.xpathstax.model.XPathRequest;
 import org.polyglotted.xpathstax.model.XmlNode;
@@ -15,6 +18,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 public class XPathStaxParserTest {
 
     @Test
+    @Ignore
     public void testParse() {
 
         XPathStaxParser parser = new XPathStaxParser();
@@ -31,6 +35,19 @@ public class XPathStaxParserTest {
         parser.parse(asStream("testxmls/books.xml"));
 
         assertEquals(44.95, resultCount.get(), 0.001);
+    }
+
+    @Test
+    public void testParseBook() {
+        XPathStaxParser parser = new XPathStaxParser();
+        parser.addHandler(new NodeConverter<Book>("/catalog/book[@id='bk101']/*") {
+            @Override
+            public void process(Book object) {
+                System.out.println(object.getId());
+                System.out.println(object.getAuthor());
+            }
+        });
+        parser.parse(asStream("testxmls/books.xml"));
     }
 
     // TODO multi-thread test
