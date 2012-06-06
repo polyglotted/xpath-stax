@@ -87,6 +87,9 @@ public class Value {
         if (Long.class.equals(targetClazz) || long.class.equals(targetClazz)) {
             return (T) getLong();
         }
+        if (Double.class.equals(targetClazz) || double.class.equals(targetClazz)) {
+            return (T) getDouble();
+        }
         if (Boolean.class.equals(targetClazz)
                 || boolean.class.equals(targetClazz)) {
             return (T) (Boolean) Boolean.parseBoolean(String.valueOf(data));
@@ -217,6 +220,20 @@ public class Value {
             return Double.parseDouble(String.valueOf(data));
         } catch (NumberFormatException e) {
             return defaultValue;
+        }
+    }
+
+    public Double getDouble() {
+        try {
+            if (isNull()) {
+                return null;
+            }
+            if (data instanceof Double) {
+                return (Double) data;
+            }
+            return Double.parseDouble(String.valueOf(data));
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

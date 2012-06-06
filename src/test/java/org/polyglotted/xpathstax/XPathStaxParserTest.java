@@ -45,6 +45,8 @@ public class XPathStaxParserTest {
             public void process(Book object) {
                 System.out.println(object.getId());
                 System.out.println(object.getAuthor());
+                System.out.println(object.getTitle());
+                System.out.println(object.getPrice());
             }
         });
         parser.parse(asStream("testxmls/books.xml"));

@@ -15,6 +15,9 @@ public class Book {
     @XmlElement
     private String title;
     
+    @XmlElement
+    private double price;
+    
     @XmlAttribute
     private String id;
     
@@ -51,5 +54,13 @@ public class Book {
 
     public String getTitle() {
         return title;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public double getPrice() {
+        return price;
     }
 }
