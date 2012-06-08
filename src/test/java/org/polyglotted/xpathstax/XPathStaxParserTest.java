@@ -26,9 +26,13 @@ public class XPathStaxParserTest {
         final AtomicDouble resultCount = new AtomicDouble();
         parser.addHandler(new XPathRequest("/catalog/book[@id='bk101']/price"), new NodeHandler() {
             @Override
-            public void process(XmlNode xmlNode) {
+            public void processNode(XmlNode xmlNode) {
                 Value count = xmlNode.getText();
                 resultCount.set(count.asDouble(0));
+            }
+
+            @Override
+            public void elementStart(String elementName) {
             }
         });
 
@@ -47,6 +51,7 @@ public class XPathStaxParserTest {
                 System.out.println(object.getAuthor());
                 System.out.println(object.getTitle());
                 System.out.println(object.getPrice());
+                System.out.println(object.getTypes());
             }
         });
         parser.parse(asStream("testxmls/books.xml"));

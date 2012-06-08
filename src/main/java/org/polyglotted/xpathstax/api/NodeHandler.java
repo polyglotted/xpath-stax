@@ -4,5 +4,7 @@ import org.polyglotted.xpathstax.model.XmlNode;
 
 public interface NodeHandler {
 
-    void process(XmlNode node);
+    void elementStart(String elementName);
+
+    void processNode(XmlNode node);
 }

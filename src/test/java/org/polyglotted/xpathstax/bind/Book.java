@@ -1,28 +1,32 @@
 package org.polyglotted.xpathstax.bind;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name="book")
+@XmlRootElement(name = "book")
 public class Book {
 
-    @XmlElement(name="author")
+    @XmlElement(name = "author")
     private String author;
 
     @XmlElement
     private String title;
-    
+
     @XmlElement
     private double price;
-    
+
     @XmlAttribute
     private String id;
-    
+
     @XmlElement
     private List<Revision> revisions;
+
+    @XmlElement(name = "type")
+    private Set<String> types;
 
     public String getAuthor() {
         return author;
@@ -62,5 +66,13 @@ public class Book {
 
     public double getPrice() {
         return price;
+    }
+
+    public void setTypes(Set<String> types) {
+        this.types = types;
+    }
+
+    public Set<String> getTypes() {
+        return types;
     }
 }

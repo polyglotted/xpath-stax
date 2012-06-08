@@ -38,7 +38,7 @@ class NodeContext implements AttributeProvider {
     void sendUpdates(String curElement) {
         NodeData data = checkNotNull(dataMap.remove(curElement));
         for (NodeHandler handler : data.handlers) {
-            handler.process(data.node);
+            handler.processNode(data.node);
         }
     }
 

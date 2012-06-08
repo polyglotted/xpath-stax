@@ -3,11 +3,19 @@ package org.polyglotted.xpathstax.bind;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.polyglotted.xpathstax.bind.ReflUtil.createNewData;
+import static org.polyglotted.xpathstax.bind.ReflUtil.getAttributeName;
+import static org.polyglotted.xpathstax.bind.ReflUtil.getElementName;
+import static org.polyglotted.xpathstax.bind.ReflUtil.getRootElementName;
+import static org.polyglotted.xpathstax.bind.ReflUtil.isBasicClass;
+import static org.polyglotted.xpathstax.bind.ReflUtil.putPrimitiveCollection;
+import static org.polyglotted.xpathstax.bind.ReflUtil.putPrimitiveValue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -18,12 +26,15 @@ import org.polyglotted.xpathstax.model.XmlNode;
 
 class XmlBinderContext<T> {
 
-    private static final String DEFAULT_NAME = "##default";
     private final Class<T> tClass;
+
+    private final Map<String, Class<?>> types = newHashMap();
+
     private final Map<String, Field> primitiveAttributes = newHashMap();
     private final Map<String, Field> primitiveElements = newHashMap();
+    private final Map<String, Field> primitiveCollection = newHashMap();
 
-    private T lastObject = null;
+    private final Stack<Object> newObjects = new Stack<Object>();
 
     public XmlBinderContext(Class<T> tClass) {
         this.tClass = validate(tClass);
@@ -31,10 +42,12 @@ class XmlBinderContext<T> {
     }
 
     private void build() {
+        types.put(getRootElementName(tClass), tClass);
         for (Field field : tClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(XmlAttribute.class)) {
                 addPrimitiveAttribute(field);
                 // TODO addPrimitiveEnum(field);
+
             } else if (field.isAnnotationPresent(XmlElement.class)) {
                 if (Collection.class.isAssignableFrom(field.getType())) {
                     addCollectionElement(field);
@@ -49,6 +62,9 @@ class XmlBinderContext<T> {
         ParameterizedType parametType = (ParameterizedType) field.getGenericType();
         Class<?> parametricClass = (Class<?>) parametType.getActualTypeArguments()[0];
         if (isBasicClass(parametricClass)) {
+            field.setAccessible(true);
+            primitiveCollection.put(getElementName(field), field);
+        } else {
             System.out.println(field);
         }
     }
@@ -67,70 +83,37 @@ class XmlBinderContext<T> {
         }
     }
 
-    private String getElementName(Field field) {
-        XmlElement element = (XmlElement) field.getAnnotation(XmlElement.class);
-        return !DEFAULT_NAME.equals(element.name()) ? element.name() : field.getName();
-    }
-
-    private String getAttributeName(Field field) {
-        XmlAttribute attribute = (XmlAttribute) field.getAnnotation(XmlAttribute.class);
-        return !DEFAULT_NAME.equals(attribute.name()) ? attribute.name() : field.getName();
-    }
-
-    private boolean isBasicClass(Class<?> type) {
-        return type.isPrimitive() || type.equals(String.class);
-    }
-
     private Class<T> validate(Class<T> tClass) {
         checkNotNull(tClass);
         checkArgument(tClass.isAnnotationPresent(XmlRootElement.class), tClass.getName() + " not a valid root element");
         return tClass;
     }
 
-    public void createNewData() {
-        if (lastObject != null)
-            return;
-
-        try {
-            lastObject = tClass.newInstance();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+    public void elementStart(String element) {
+        if (types.containsKey(element)) {
+            newObjects.push(createNewData(types.get(element)));
         }
     }
 
-    public T retrieve() {
-        T result = lastObject;
-        lastObject = null;
-        return result;
+    public T retrieve(XmlNode node) {
+        Object lastObject = newObjects.pop();
+        for (Map.Entry<String, Value> entry : node.getAttribute().iterate()) {
+            if (primitiveAttributes.containsKey(entry.getKey())) {
+                putPrimitiveValue(lastObject, entry.getValue(), primitiveAttributes.get(entry.getKey()));
+            }
+        }
+        return tClass.cast(lastObject);
     }
 
     public void handleChildNode(XmlNode child) {
-        if (primitiveElements.containsKey(child.getName())) {
-            putPrimitiveText(child.getText(), primitiveElements.get(child.getName()));
-        }
-    }
+        Object lastObject = newObjects.peek();
+        String name = child.getName();
 
-    public void handleNode(XmlNode node) {
-        for (Map.Entry<String, Value> entry : node.getAttribute().iterate()) {
-            if (primitiveAttributes.containsKey(entry.getKey())) {
-                putPrimitiveText(entry.getValue(), primitiveAttributes.get(entry.getKey()));
-            }
-        }
-        //TODO set value text
-    }
+        if (primitiveElements.containsKey(name)) {
+            putPrimitiveValue(lastObject, child.getText(), primitiveElements.get(name));
 
-    private void putPrimitiveText(Value text, Field field) {
-        checkNotNull(lastObject);
-        try {
-            field.set(lastObject, text.coerce(field.getType(), null));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } else if (primitiveCollection.containsKey(name)) {
+            putPrimitiveCollection(lastObject, child.getText(), primitiveCollection.get(name));
         }
-    }
-
-    public String toString() {
-        System.out.println(primitiveAttributes);
-        System.out.println(primitiveElements);
-        return "";
     }
 }

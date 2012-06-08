@@ -27,11 +27,14 @@ public abstract class NodeConverter<T> implements NodeHandler {
     public abstract void process(T object);
 
     @Override
-    public final void process(XmlNode node) {
-        context.createNewData();
+    public final void elementStart(String elementName) {
+        context.elementStart(elementName);
+    }
+    
+    @Override
+    public final void processNode(XmlNode node) {
         if (getRequest().isElementEquals(node.getPath())) {
-            context.handleNode(node);
-            process(context.retrieve());
+            process(context.retrieve(node));
         } else {
             context.handleChildNode(node);
         }

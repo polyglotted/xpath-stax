@@ -32,7 +32,7 @@ public class XPathStaxParser {
     }
 
     public <T> void addHandler(NodeConverter<T> converter) {
-        handlersMap.put(checkNotNull(converter.getRequest()), checkNotNull(converter));
+        addHandler(converter.getRequest(), converter);
     }
 
     public void parse(InputStream inputStream) {
@@ -46,20 +46,18 @@ public class XPathStaxParser {
 
                 switch (eventType) {
                 case XMLEvent.START_ELEMENT:
-                    curElement = curElement + SLASH + xmlr.getName().toString();
+                    curElement = curElement + SLASH + getName(xmlr);
                     processStartElement(xmlr, context, curElement);
                     break;
 
                 case XMLEvent.CHARACTERS:
                     context.updateText(curElement,
-                                    new String(xmlr.getTextCharacters(), xmlr.getTextStart(), xmlr.getTextLength()));
+                        new String(xmlr.getTextCharacters(), xmlr.getTextStart(), xmlr.getTextLength()));
                     break;
 
                 case XMLEvent.END_ELEMENT:
-                    if (!SLASH.equals(curElement)) {
-                        context.sendUpdates(curElement);
-                    }
-                    curElement = curElement.substring(0, curElement.lastIndexOf(SLASH + xmlr.getName().toString()));
+                    processEndElement(xmlr, context, curElement);
+                    curElement = curElement.substring(0, curElement.lastIndexOf(SLASH + getName(xmlr)));
                     break;
                 }
             }
@@ -77,11 +75,23 @@ public class XPathStaxParser {
         List<NodeHandler> handlers = Lists.newArrayList();
         for (Entry<XPathRequest, NodeHandler> entry : handlersMap.entrySet()) {
             if (entry.getKey().canProcess(curElement, attribute, context)) {
-                handlers.add(entry.getValue());
+                NodeHandler handler = entry.getValue();
+                handler.elementStart(getName(xmlr));
+                handlers.add(handler);
             }
         }
 
         context.addHandlers(curElement, attribute, handlers);
+    }
+
+    private void processEndElement(XMLStreamReader2 xmlr, NodeContext context, String curElement) {
+        if (!SLASH.equals(curElement)) {
+            context.sendUpdates(curElement);
+        }
+    }
+
+    private static String getName(XMLStreamReader2 xmlr) {
+        return xmlr.getName().toString();
     }
 
     private static XMLInputFactory2 createFactory() {

@@ -8,6 +8,11 @@
         <publish_date>2000-10-01</publish_date>
         <description>An in-depth look at creating applications
             with XML.</description>
+        <revision year="2000">1st Ed</revision>
+        <revision year="2002">2nd Ed</revision>
+        <type>Hardcover</type>
+        <type>Softback</type>
+        <type>Bounded</type>
     </book>
     <book id="bk102">
         <author>Ralls, Kim</author>

@@ -1,0 +1,86 @@
+package org.polyglotted.xpathstax.bind;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.polyglotted.xpathstax.model.Value;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+class ReflUtil {
+    private static final String DEFAULT_NAME = "##default";
+
+    static boolean isBasicClass(Class<?> type) {
+        return type.isPrimitive() || type.equals(String.class);
+    }
+
+    static String getRootElementName(Class<?> clazz) {
+        XmlRootElement element = (XmlRootElement) clazz.getAnnotation(XmlRootElement.class);
+        return !DEFAULT_NAME.equals(element.name()) ? element.name() : clazz.getName();
+    }
+    
+    static String getElementName(Field field) {
+        XmlElement element = (XmlElement) field.getAnnotation(XmlElement.class);
+        return !DEFAULT_NAME.equals(element.name()) ? element.name() : field.getName();
+    }
+
+    static String getAttributeName(Field field) {
+        XmlAttribute attribute = (XmlAttribute) field.getAnnotation(XmlAttribute.class);
+        return !DEFAULT_NAME.equals(attribute.name()) ? attribute.name() : field.getName();
+    }
+
+    static <T> T createNewData(Class<T> clazz) {
+        try {
+            return clazz.newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    static void putPrimitiveValue(Object lastObject, Value value, Field field) {
+        checkNotNull(lastObject);
+        try {
+            field.set(lastObject, value.coerce(field.getType(), null));
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    static void putPrimitiveCollection(Object lastObject, Value value, Field field) {
+        checkNotNull(lastObject);
+        try {
+            @SuppressWarnings("unchecked")
+            Collection<Object> coll = (Collection<Object>) (field.get(lastObject));
+            if(coll == null) {
+                coll = createColl(lastObject, field);
+                field.set(lastObject, coll);
+            }
+            coll.add(value.get());
+            
+        } catch (RuntimeException re) {
+            throw re;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static Collection<Object> createColl(Object lastObject, Field field) {
+        Class<?> type = field.getType();
+        if(type.isAssignableFrom(ArrayList.class)) {
+            return Lists.newArrayList();
+        }
+        else if(type.isAssignableFrom(HashSet.class)) {
+            return Sets.newHashSet();
+        }
+        throw new IllegalStateException("currently supports only lists and sets");
+    }
+}
