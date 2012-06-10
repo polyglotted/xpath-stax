@@ -10,8 +10,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "book")
 public class Book {
 
+    @XmlAttribute
+    private String id;
+
     @XmlElement(name = "author")
-    private String author;
+    private String authorName;
 
     @XmlElement
     private String title;
@@ -19,21 +22,21 @@ public class Book {
     @XmlElement
     private double price;
 
-    @XmlAttribute
-    private String id;
-
-    @XmlElement
-    private List<Revision> revisions;
-
     @XmlElement(name = "type")
     private Set<String> types;
 
+    @XmlElement(name = "description")
+    private Desc description;
+    
+    @XmlElement(name = "revision")
+    private List<Revision> revisions;
+
     public String getAuthor() {
-        return author;
+        return authorName;
     }
 
     public void setAuthor(String author) {
-        this.author = author;
+        this.authorName = author;
     }
 
     public String getId() {
@@ -74,5 +77,13 @@ public class Book {
 
     public Set<String> getTypes() {
         return types;
+    }
+
+    public void setDescription(Desc description) {
+        this.description = description;
+    }
+
+    public Desc getDescription() {
+        return description;
     }
 }
