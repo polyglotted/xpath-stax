@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Test;
+import org.polyglotted.xpathstax.data.Value;
 
 public class XmlAttributeTest {
 

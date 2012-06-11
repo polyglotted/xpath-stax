@@ -5,10 +5,20 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "book")
 public class Book {
+
+    @XmlEnum
+    public enum Genre {
+        @XmlEnumValue("Computer Science")
+        Computer, Fantasy, Romance, Horror, 
+        @XmlEnumValue("Science Fiction")
+        SciFi
+    }
 
     @XmlAttribute
     private String id;
@@ -22,12 +32,15 @@ public class Book {
     @XmlElement
     private double price;
 
+    @XmlElement
+    private Genre genre;
+
     @XmlElement(name = "type")
     private Set<String> types;
 
     @XmlElement(name = "description")
     private Desc description;
-    
+
     @XmlElement(name = "revision")
     private List<Revision> revisions;
 
@@ -85,5 +98,13 @@ public class Book {
 
     public Desc getDescription() {
         return description;
+    }
+
+    public Genre getGenre() {
+        return genre;
+    }
+
+    public void setGenre(Genre genre) {
+        this.genre = genre;
     }
 }

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.codehaus.stax2.XMLStreamReader2;
+import org.polyglotted.xpathstax.data.Value;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;

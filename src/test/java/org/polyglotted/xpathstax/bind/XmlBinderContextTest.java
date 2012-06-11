@@ -23,11 +23,11 @@ public class XmlBinderContextTest {
         
         ClassContext bookCtx = contexts.get(Book.class);
         checkAttributes(bookCtx, "id");
-        checkElements(bookCtx, "title", "author", "price", "description");
+        checkElements(bookCtx, "title", "author", "price", "description", "genre");
         checkCollections(bookCtx, "type", "revision");
 
         ClassContext revCtx = contexts.get(Revision.class);
-        checkAttributes(revCtx, "year");
+        checkAttributes(revCtx, "year", "definition");
         checkXmlValue(revCtx);
 
         ClassContext descCtx = contexts.get(Desc.class);

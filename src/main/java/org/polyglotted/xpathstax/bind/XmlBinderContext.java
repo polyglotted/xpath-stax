@@ -2,17 +2,7 @@ package org.polyglotted.xpathstax.bind;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.polyglotted.xpathstax.bind.ReflUtil.createNewData;
-import static org.polyglotted.xpathstax.bind.ReflUtil.getAttributeName;
-import static org.polyglotted.xpathstax.bind.ReflUtil.getElementName;
-import static org.polyglotted.xpathstax.bind.ReflUtil.getParametricClass;
-import static org.polyglotted.xpathstax.bind.ReflUtil.getRootElementName;
-import static org.polyglotted.xpathstax.bind.ReflUtil.isBasicClass;
-import static org.polyglotted.xpathstax.bind.ReflUtil.isCollection;
-import static org.polyglotted.xpathstax.bind.ReflUtil.putChildObject;
-import static org.polyglotted.xpathstax.bind.ReflUtil.putPrimitiveCollection;
-import static org.polyglotted.xpathstax.bind.ReflUtil.putPrimitiveValue;
-import static org.polyglotted.xpathstax.bind.ReflUtil.validateRoot;
+import static org.polyglotted.xpathstax.bind.ReflUtil.*;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -20,10 +10,11 @@ import java.util.Stack;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-import org.polyglotted.xpathstax.model.Value;
+import org.polyglotted.xpathstax.data.Value;
 import org.polyglotted.xpathstax.model.XmlNode;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -56,23 +47,27 @@ class XmlBinderContext<T> {
                 ctx.setXmlValueField(field);
 
             } else if (field.isAnnotationPresent(XmlAttribute.class)) {
-                checkBasicClass(field.getType(), field.getName());
-                ctx.addPrimitiveAttribute(field);
-                // TODO addPrimitiveEnum(field);
+                if (!isEnumType(field.getType())) 
+                    checkBasicClass(field.getType(), field.getName());
+                ctx.addAttribute(field);
 
             } else if (field.isAnnotationPresent(XmlElement.class)) {
                 Class<?> fieldClass = isCollection(field) ? getParametricClass(field) : field.getType();
 
                 if (isXmlType(fieldClass)) {
                     build(getElementName(field), fieldClass);
+
+                } else if (isEnumType(fieldClass)) {
+                    checkArgument(!isCollection(field), "Does not support collections of enum " + fieldName);
+
                 } else {
                     checkBasicClass(fieldClass, field.getName());
                 }
 
                 if (isCollection(field)) {
-                    ctx.addCollectionElement(field);
+                    ctx.addCollection(field);
                 } else {
-                    ctx.addPrimitiveElement(field);
+                    ctx.addElement(field);
                 }
             }
         }
@@ -84,6 +79,10 @@ class XmlBinderContext<T> {
 
     private boolean isXmlType(Class<?> fieldClass) {
         return fieldClass.isAnnotationPresent(XmlType.class);
+    }
+
+    private boolean isEnumType(Class<?> fieldClass) {
+        return fieldClass.isEnum() && fieldClass.isAnnotationPresent(XmlEnum.class);
     }
 
     public void elementStart(String element) {
@@ -146,17 +145,17 @@ class XmlBinderContext<T> {
         final Map<String, Field> collections = newHashMap();
         private Field xmlValueField = null;
 
-        void addPrimitiveAttribute(Field field) {
+        void addAttribute(Field field) {
             field.setAccessible(true);
             attributes.put(getAttributeName(field), field);
         }
 
-        void addPrimitiveElement(Field field) {
+        void addElement(Field field) {
             field.setAccessible(true);
             elements.put(getElementName(field), field);
         }
 
-        void addCollectionElement(Field field) {
+        void addCollection(Field field) {
             field.setAccessible(true);
             collections.put(getElementName(field), field);
         }
@@ -166,19 +165,19 @@ class XmlBinderContext<T> {
                 putPrimitiveValue(lastObject, value, elements.get(fieldName));
 
             } else if (collections.containsKey(fieldName)) {
-                putPrimitiveCollection(lastObject, value, collections.get(fieldName));
+                putPrimitiveInCollection(lastObject, value, collections.get(fieldName));
 
             } else if (attributes.containsKey(fieldName)) {
                 putPrimitiveValue(lastObject, value, attributes.get(fieldName));
             }
         }
-        
+
         void putChild(Object lastObject, String fieldName, Object child) {
             if (elements.containsKey(fieldName)) {
                 putChildObject(lastObject, child, elements.get(fieldName));
 
             } else if (collections.containsKey(fieldName)) {
-                //putChildCollection(lastObject, child, collections.get(fieldName));
+                putChildInCollection(lastObject, child, collections.get(fieldName));
             }
         }
 

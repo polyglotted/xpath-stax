@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.polyglotted.xpathstax.model.Value;
+import org.polyglotted.xpathstax.data.Value;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -73,6 +73,7 @@ class ReflUtil {
     }
 
     static void putPrimitiveValue(Object lastObject, Value value, Field field) {
+        checkNotNull(field);
         try {
             field.set(checkNotNull(lastObject), value.coerce(field.getType(), null));
         } catch (Exception ex) {
@@ -82,22 +83,15 @@ class ReflUtil {
 
     static void putChildObject(Object lastObject, Object child, Field field) {
         try {
-            field.set(checkNotNull(lastObject), child);
+            checkNotNull(field).set(checkNotNull(lastObject), child);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    static void putPrimitiveCollection(Object lastObject, Value value, Field field) {
-        checkNotNull(lastObject);
+    static void putPrimitiveInCollection(Object lastObject, Value value, Field field) {
         try {
-            @SuppressWarnings("unchecked")
-            Collection<Object> coll = (Collection<Object>) (field.get(lastObject));
-            if (coll == null) {
-                coll = createColl(lastObject, field);
-                field.set(lastObject, coll);
-            }
-            coll.add(value.get());
+            getOrCreateColl(checkNotNull(lastObject), checkNotNull(field)).add(value.get());
 
         } catch (RuntimeException re) {
             throw re;
@@ -106,6 +100,27 @@ class ReflUtil {
         }
     }
 
+    static void putChildInCollection(Object lastObject, Object child, Field field) {
+        try {
+            getOrCreateColl(checkNotNull(lastObject), checkNotNull(field)).add(child);
+
+        } catch (RuntimeException re) {
+            throw re;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static Collection<Object> getOrCreateColl(Object lastObject, Field field) throws Exception {
+        @SuppressWarnings("unchecked")
+        Collection<Object> coll = (Collection<Object>) (field.get(lastObject));
+        if (coll == null) {
+            coll = createColl(lastObject, field);
+            field.set(lastObject, coll);
+        }
+        return coll;
+    }
+    
     private static Collection<Object> createColl(Object lastObject, Field field) {
         Class<?> type = field.getType();
         if (type.isAssignableFrom(ArrayList.class)) {
