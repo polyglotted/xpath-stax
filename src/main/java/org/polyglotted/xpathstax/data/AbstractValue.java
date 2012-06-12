@@ -44,6 +44,27 @@ abstract class AbstractValue {
     }
 
     @Override
+    public int hashCode() {
+        return 31 * 1 + ((data == null) ? 0 : data.hashCode());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+
+        AbstractValue other = (AbstractValue) obj;
+        if (data != null ? !data.equals(other.data) : other.data != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
     public String toString() {
         return asString(null);
     }

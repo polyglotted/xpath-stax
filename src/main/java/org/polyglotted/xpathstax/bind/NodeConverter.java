@@ -2,11 +2,14 @@ package org.polyglotted.xpathstax.bind;
 
 import static org.polyglotted.xpathstax.bind.ReflUtil.getParametricClass;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.polyglotted.xpathstax.api.NodeHandler;
 import org.polyglotted.xpathstax.model.XPathRequest;
 import org.polyglotted.xpathstax.model.XmlNode;
 
 /* experimental using javax.xml.bind annotations to simple objects */
+@NotThreadSafe
 public abstract class NodeConverter<T> implements NodeHandler {
 
     private final XmlBinderContext<T> context;

@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Stack;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlEnum;
@@ -19,6 +20,7 @@ import org.polyglotted.xpathstax.model.XmlNode;
 
 import com.google.common.annotations.VisibleForTesting;
 
+@NotThreadSafe
 class XmlBinderContext<T> {
 
     private final Class<T> rootClass;
@@ -47,21 +49,19 @@ class XmlBinderContext<T> {
                 ctx.setXmlValueField(field);
 
             } else if (field.isAnnotationPresent(XmlAttribute.class)) {
-                if (!isEnumType(field.getType())) 
+                if (!isEnumType(field.getType()))
                     checkBasicClass(field.getType(), field.getName());
                 ctx.addAttribute(field);
 
             } else if (field.isAnnotationPresent(XmlElement.class)) {
-                Class<?> fieldClass = isCollection(field) ? getParametricClass(field) : field.getType();
+                Class<?> fieldClass = getFieldClass(field);
 
                 if (isXmlType(fieldClass)) {
                     build(getElementName(field), fieldClass);
 
-                } else if (isEnumType(fieldClass)) {
-                    checkArgument(!isCollection(field), "Does not support collections of enum " + fieldName);
-
                 } else {
-                    checkBasicClass(fieldClass, field.getName());
+                    if (!isEnumType(fieldClass))
+                        checkBasicClass(fieldClass, field.getName());
                 }
 
                 if (isCollection(field)) {

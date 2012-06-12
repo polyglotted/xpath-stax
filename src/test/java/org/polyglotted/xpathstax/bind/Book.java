@@ -1,5 +1,6 @@
 package org.polyglotted.xpathstax.bind;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -20,6 +21,11 @@ public class Book {
         SciFi
     }
 
+    @XmlEnum
+    public enum Type {
+        Hardcover, Softback, Bounded
+    }
+
     @XmlAttribute
     private String id;
 
@@ -36,7 +42,10 @@ public class Book {
     private Genre genre;
 
     @XmlElement(name = "type")
-    private Set<String> types;
+    private Set<Type> types;
+
+    @XmlElement(name = "comment")
+    private ArrayList<String> comments;
 
     @XmlElement(name = "description")
     private Desc description;
@@ -84,11 +93,11 @@ public class Book {
         return price;
     }
 
-    public void setTypes(Set<String> types) {
+    public void setTypes(Set<Type> types) {
         this.types = types;
     }
 
-    public Set<String> getTypes() {
+    public Set<Type> getTypes() {
         return types;
     }
 
@@ -106,5 +115,13 @@ public class Book {
 
     public void setGenre(Genre genre) {
         this.genre = genre;
+    }
+
+    public ArrayList<String> getComments() {
+        return comments;
+    }
+
+    public void setComments(ArrayList<String> comments) {
+        this.comments = comments;
     }
 }

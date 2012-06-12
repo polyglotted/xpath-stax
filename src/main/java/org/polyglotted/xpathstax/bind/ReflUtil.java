@@ -31,6 +31,10 @@ class ReflUtil {
         return type.isPrimitive() || type.equals(String.class);
     }
 
+    static Class<? extends Object> getFieldClass(Field field) {
+        return isCollection(field) ? getParametricClass(field) : field.getType();
+    }
+
     static boolean isCollection(Field field) {
         return Collection.class.isAssignableFrom(field.getType());
     }
@@ -75,15 +79,7 @@ class ReflUtil {
     static void putPrimitiveValue(Object lastObject, Value value, Field field) {
         checkNotNull(field);
         try {
-            field.set(checkNotNull(lastObject), value.coerce(field.getType(), null));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    static void putChildObject(Object lastObject, Object child, Field field) {
-        try {
-            checkNotNull(field).set(checkNotNull(lastObject), child);
+            field.set(checkNotNull(lastObject), getValueObject(value, field));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -91,10 +87,22 @@ class ReflUtil {
 
     static void putPrimitiveInCollection(Object lastObject, Value value, Field field) {
         try {
-            getOrCreateColl(checkNotNull(lastObject), checkNotNull(field)).add(value.get());
+            getOrCreateColl(checkNotNull(lastObject), checkNotNull(field)).add(getValueObject(value, field));
 
         } catch (RuntimeException re) {
             throw re;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static Object getValueObject(Value value, Field field) {
+        return value.coerce(getFieldClass(field), null);
+    }
+
+    static void putChildObject(Object lastObject, Object child, Field field) {
+        try {
+            checkNotNull(field).set(checkNotNull(lastObject), child);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -120,7 +128,7 @@ class ReflUtil {
         }
         return coll;
     }
-    
+
     private static Collection<Object> createColl(Object lastObject, Field field) {
         Class<?> type = field.getType();
         if (type.isAssignableFrom(ArrayList.class)) {

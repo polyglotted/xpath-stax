@@ -1,52 +1,62 @@
 package org.polyglotted.xpathstax;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.polyglotted.xpathstax.api.NodeHandler;
-import org.polyglotted.xpathstax.bind.Book;
+import org.polyglotted.xpathstax.bind.*;
 import org.polyglotted.xpathstax.bind.Book.Genre;
-import org.polyglotted.xpathstax.bind.Desc;
-import org.polyglotted.xpathstax.bind.NodeConverter;
-import org.polyglotted.xpathstax.bind.Revision;
+import org.polyglotted.xpathstax.bind.Book.Type;
 import org.polyglotted.xpathstax.bind.Revision.Definition;
 import org.polyglotted.xpathstax.data.Value;
 import org.polyglotted.xpathstax.model.XPathRequest;
 import org.polyglotted.xpathstax.model.XmlNode;
 
-import com.google.common.util.concurrent.AtomicDouble;
-
 public class XPathStaxParserTest {
 
     @Test
-    @Ignore
     public void testParse() {
-
         XPathStaxParser parser = new XPathStaxParser();
-
-        final AtomicDouble resultCount = new AtomicDouble();
         parser.addHandler(new XPathRequest("/catalog/book[@id='bk101']/price"), new NodeHandler() {
             @Override
             public void processNode(XmlNode xmlNode) {
                 Value count = xmlNode.getText();
-                resultCount.set(count.asDouble(0d));
-            }
+                assertEquals(44.95, count.asDouble(), 0.001);            }
 
             @Override
             public void elementStart(String elementName) {
+                assertEquals("price", elementName);
             }
         });
         parser.parse(asStream("testxmls/books.xml"));
+    }
 
-        assertEquals(44.95, resultCount.get(), 0.001);
+    @Test
+    public void testParseAllBooks() {
+
+        XPathStaxParser parser = new XPathStaxParser();
+
+        final List<Book> books = newArrayList();
+        parser.addHandler(new NodeConverter<Book>("/catalog/book/*") {
+            @Override
+            public void process(Book object) {
+                books.add(object);
+            }
+        });
+        parser.parse(asStream("testxmls/books.xml"));
+        assertEquals(10, books.size());
     }
 
     @Test
@@ -65,7 +75,10 @@ public class XPathStaxParserTest {
 
         Book book = ref.get();
         assertBookDetails(book, "bk101", "Gambardella, Matthew", "XML Developer's Guide", 44.95, Genre.Computer);
-        assertTrue(newHashSet("Softback", "Bounded", "Hardcover").containsAll(book.getTypes()));
+
+        assertTrue(newHashSet(Type.Softback, Type.Hardcover, Type.Bounded).containsAll(book.getTypes()));
+        assertTrue(newArrayList("this book is brilliant, the sunday times", "this book is a must read, the economist")
+                        .containsAll(book.getComments()));
         assertDescDetails(book.getDescription(), "An in-depth look at creating applications with XML.");
         assertRevisions(book.getRevisions());
     }
@@ -97,7 +110,56 @@ public class XPathStaxParserTest {
         assertEquals(definition, rev.getDefinition());
     }
 
-    // TODO multi-thread test
+    @Test
+    public void testMultiThreaded() {
+        final XPathStaxParser parser = new XPathStaxParser();
+
+        final AtomicReference<Book> ref1 = new AtomicReference<Book>();
+        parser.addHandler(new NodeConverter<Book>("/catalog/book[@id='bk102']/*") {
+            @Override
+            public void process(Book object) {
+                ref1.set(object);
+            }
+        });
+
+        final AtomicReference<Book> ref2 = new AtomicReference<Book>();
+        parser.addHandler(new NodeConverter<Book>("/catalog/book[@id='bk112']/*") {
+            @Override
+            public void process(Book object) {
+                ref2.set(object);
+            }
+        });
+
+        String[] fileNames = new String[] { "testxmls/books.xml", "testxmls/books2.xml" };
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final CountDownLatch stopLatch = new CountDownLatch(fileNames.length);
+
+        ExecutorService threadPool = Executors.newCachedThreadPool();
+        for (final String fileName : fileNames) {
+            threadPool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        startLatch.await();
+                    } catch (InterruptedException ignore) {
+                    }
+                    parser.parse(asStream(fileName));
+                    stopLatch.countDown();
+                }
+            });
+        }
+        startLatch.countDown();
+
+        try {
+            stopLatch.await();
+        } catch (InterruptedException e) {
+            fail("failed to await termination");
+        }
+
+        assertBookDetails(ref1.get(), "bk102", "Ralls, Kim", "Midnight Rain", 5.95, Genre.Fantasy);
+        assertBookDetails(ref2.get(), "bk112", "Galos, Mike", "Visual Studio 7: A Comprehensive Guide", 49.95,
+                        Genre.Computer);
+    }
 
     protected InputStream asStream(String path) {
         return getClass().getClassLoader().getResourceAsStream(path);
