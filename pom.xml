@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.polyglotted</groupId>
     <artifactId>xpath-stax</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Xpath StAX parser</name>
     <description>Xpath evaluator on StAX parser</description>
