@@ -158,11 +158,9 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <exec executable="cp">
-                                    <arg value="-pr" />
-                                    <arg value="${gpg.homedir}" />
-                                    <arg value="${project.build.directory}/gpglocal" />
-                                </exec>
+                                <copy todir="${project.build.directory}/gpglocal">
+                                    <fileset dir="${gpg.homedir}" includes="*/**" />
+                                </copy>
                             </tasks>
                         </configuration>
                         <goals>
