@@ -150,41 +150,56 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-gpgs</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <tasks>
-                                <copy todir="${project.build.directory}/gpglocal">
-                                    <fileset dir="${gpg.homedir}" includes="*/**" />
-                                </copy>
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <configuration>
-                            <defaultKeyring>false</defaultKeyring>
-                            <homedir>${project.build.directory}/gpglocal</homedir><!-- hack for cloudbees -->
-                        </configuration>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>sign-release-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-gpgs</id>
+                                <phase>package</phase>
+                                <configuration>
+                                    <tasks>
+                                        <copy todir="${project.build.directory}/gpglocal">
+                                            <fileset dir="${gpg.homedir}" includes="*/**" />
+                                        </copy>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <configuration> <!-- hack for cloudbees -->
+                                    <defaultKeyring>false</defaultKeyring>
+                                    <homedir>${project.build.directory}/gpglocal</homedir>
+                                </configuration>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
