@@ -120,7 +120,6 @@
 
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>${jdk.version}</source>
@@ -128,7 +127,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
@@ -141,7 +139,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <executions>
                     <execution>
@@ -154,16 +151,36 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-gpgs</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <exec executable="cp">
+                                    <arg value="-pr" />
+                                    <arg value="${gpg.homedir}" />
+                                    <arg value="${project.build.directory}/gpglocal" />
+                                </exec>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <configuration>
-                    <defaultKeyring>false</defaultKeyring>
-                    <homedir>${gpg.homedir}</homedir>
-                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
                         <phase>verify</phase>
+                        <configuration>
+                            <defaultKeyring>false</defaultKeyring>
+                            <homedir>${project.build.directory}/gpglocal</homedir><!-- hack for cloudbees -->
+                        </configuration>
                         <goals>
                             <goal>sign</goal>
                         </goals>
