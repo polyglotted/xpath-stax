@@ -186,6 +186,7 @@
                         <id>sign-artifacts</id>
                         <phase>verify</phase>
                         <configuration> <!-- hack for cloudbees -->
+                            <useAgent>true</useAgent>
                             <defaultKeyring>false</defaultKeyring>
                             <homedir>${project.build.directory}/gpglocal</homedir>
                         </configuration>
