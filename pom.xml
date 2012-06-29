@@ -130,6 +130,14 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.3.2</version><!--$NO-MVN-MAN-VER$-->
+                <configuration>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>2.1.2</version>
                 <executions>
@@ -186,7 +194,6 @@
                         <id>sign-artifacts</id>
                         <phase>verify</phase>
                         <configuration> <!-- hack for cloudbees -->
-                            <useAgent>true</useAgent>
                             <defaultKeyring>false</defaultKeyring>
                             <homedir>${project.build.directory}/gpglocal</homedir>
                         </configuration>
