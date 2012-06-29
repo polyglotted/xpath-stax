@@ -7,7 +7,7 @@
     </parent>
     <groupId>org.polyglotted</groupId>
     <artifactId>xpath-stax</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Xpath StAX parser</name>
     <description>Xpath evaluator on StAX parser</description>
@@ -23,7 +23,7 @@
         <connection>scm:git:git@github.com:polyglotted/xpath-stax.git</connection>
         <developerConnection>scm:git:git@github.com:polyglotted/xpath-stax.git</developerConnection>
         <url>https://github.com/polyglotted/xpath-stax</url>
-      <tag>xpath-stax-1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
     <developers>
         <developer>
