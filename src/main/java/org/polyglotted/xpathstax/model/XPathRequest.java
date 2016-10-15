@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -17,97 +19,135 @@ import com.google.common.collect.ImmutableMap;
 @ThreadSafe
 public class XPathRequest {
 
-    public static final String SLASH = "/";
+	public static final String SLASH = "/";
+	public static final char SLASH_CHAR = '/';
+	public static final char CURLY_BRACE_OPEN_CHAR = '{';
+	public static final char CURLY_BRACE_CLOSE_CHAR = '}';
 
-    private static final Splitter SLASH_SPLITTER = Splitter.on(SLASH).trimResults().omitEmptyStrings();
+	// private static final Splitter SLASH_SPLITTER =
+	// Splitter.on(SLASH).trimResults().omitEmptyStrings();
 
-    private final String request;
-    private final String elementName;
-    private final boolean includeChildren;
-    private final Map<String, XmlAttribute> attributesMap;
+	private final String request;
+	private final String elementName;
+	private final boolean includeChildren;
+	private final Map<String, XmlAttribute> attributesMap;
 
-    public XPathRequest(String request) {
-        this.request = checkNotNull(request);
-        final String STAR = "*";
+	public XPathRequest(String request) {
+		this.request = checkNotNull(request);
+		final String STAR = "*";
 
-        StringBuilder builder = new StringBuilder();
-        final Map<String, XmlAttribute> attribMap = newHashMap();
+		StringBuilder builder = new StringBuilder();
+		final Map<String, XmlAttribute> attribMap = newHashMap();
 
-        Iterable<String> values = SLASH_SPLITTER.split(this.request);
-        for (String value : values) {
-            final int elementEnd = getElementEnd(value);
-            final String elementText = value.substring(0, elementEnd);
+		// Iterable<String> values = SLASH_SPLITTER.split(this.request);
 
-            if (!STAR.equals(elementText)) {
-                builder.append(SLASH);
-                builder.append(elementText);
-            } else {
-                checkArgument(request.endsWith(STAR), "* can only be the last char in the request");
-            }
+		List<String> values = new ArrayList<String>();
+		StringBuilder valueItemSb = new StringBuilder();
+		
+		// ignore in curly braces characters to handle xmlns naming. 
+		boolean isInCurlyBrace = false;
+		for (int i = 0; i < this.request.length(); ++i) {
+			char ch = this.request.charAt(i);
 
-            if (elementEnd != value.length()) {
-                attribMap.put(builder.toString(), parseAttribute(value.substring(elementEnd)));
-            }
-        }
+			if (ch == CURLY_BRACE_OPEN_CHAR)
+				isInCurlyBrace = true;
+			if (ch == CURLY_BRACE_CLOSE_CHAR)
+				isInCurlyBrace = false;
 
-        this.elementName = builder.toString();
-        this.includeChildren = request.endsWith(STAR);
-        this.attributesMap = ImmutableMap.copyOf(attribMap);
-    }
+			if (isInCurlyBrace) {
+				valueItemSb.append(ch);
+			} else {
+				if (ch == SLASH_CHAR) {
+					if (!valueItemSb.toString().isEmpty()) {
+						values.add(valueItemSb.toString());
+						valueItemSb = new StringBuilder();
+					}
+				} else if (i == this.request.length() - 1) {
+					valueItemSb.append(ch);
+					if (!valueItemSb.toString().isEmpty()) {
+						values.add(valueItemSb.toString());
+						valueItemSb = new StringBuilder();
+					}
+				} else {
+					valueItemSb.append(ch);
+				}
+			}
+		}
 
-    private XmlAttribute parseAttribute(String value) {
-        checkArgument(value.startsWith("[@"), "support only string predicate, given text " + value);
-        checkArgument(value.endsWith("]"), "malformed predicate text, given text " + value);
-        return XmlAttribute.from(value.substring(2, value.length() - 1));
-    }
+		for (String value : values) {
+			final int elementEnd = getElementEnd(value);
+			final String elementText = value.substring(0, elementEnd);
 
-    private int getElementEnd(String value) {
-        int bIndex = value.indexOf('[');
-        return bIndex > 0 ? bIndex : value.length();
-    }
+			if (!STAR.equals(elementText)) {
+				builder.append(SLASH_CHAR);
+				builder.append(elementText);
+			} else {
+				checkArgument(request.endsWith(STAR), "* can only be the last char in the request");
+			}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+			if (elementEnd != value.length()) {
+				attribMap.put(builder.toString(), parseAttribute(value.substring(elementEnd)));
+			}
+		}
 
-        XPathRequest other = (XPathRequest) obj;
-        if (request != null ? !request.equals(other.request) : other.request != null)
-            return false;
+		this.elementName = builder.toString();
+		this.includeChildren = request.endsWith(STAR);
+		this.attributesMap = ImmutableMap.copyOf(attribMap);
+	}
 
-        return true;
-    }
+	private XmlAttribute parseAttribute(String value) {
+		checkArgument(value.startsWith("[@"), "support only string predicate, given text " + value);
+		checkArgument(value.endsWith("]"), "malformed predicate text, given text " + value);
+		return XmlAttribute.from(value.substring(2, value.length() - 1));
+	}
 
-    @Override
-    public int hashCode() {
-        return 31 * 1 + ((request == null) ? 0 : request.hashCode());
-    }
+	private int getElementEnd(String value) {
+		int bIndex = value.indexOf('[');
+		return bIndex > 0 ? bIndex : value.length();
+	}
 
-    public boolean canProcess(String elemName, XmlAttribute elementAttribute, AttributeProvider provider) {
-        if (isElementEquals(elemName) || includeChildren && elemName.startsWith(this.elementName)) {
-            return findParentAttributes(elementAttribute, provider);
-        }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
 
-        return false;
-    }
+		XPathRequest other = (XPathRequest) obj;
+		if (request != null ? !request.equals(other.request) : other.request != null)
+			return false;
 
-    public boolean isElementEquals(String elemName) {
-        return checkNotNull(elemName, "elementname cannot be null").equals(this.elementName);
-    }
+		return true;
+	}
 
-    private boolean findParentAttributes(XmlAttribute elementAttribute, AttributeProvider provider) {
-        boolean result = true;
-        for (Entry<String, XmlAttribute> entry : attributesMap.entrySet()) {
-            XmlAttribute parentAttrib = provider.getAttribute(entry.getKey());
-            if (!elementAttribute.contains(entry.getValue()) && !parentAttrib.contains(entry.getValue())) {
-                result = false;
-                break;
-            }
-        }
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		return 31 * 1 + ((request == null) ? 0 : request.hashCode());
+	}
+
+	public boolean canProcess(String elemName, XmlAttribute elementAttribute, AttributeProvider provider) {
+		if (isElementEquals(elemName) || includeChildren && elemName.startsWith(this.elementName)) {
+			return findParentAttributes(elementAttribute, provider);
+		}
+
+		return false;
+	}
+
+	public boolean isElementEquals(String elemName) {
+		return checkNotNull(elemName, "elementname cannot be null").equals(this.elementName);
+	}
+
+	private boolean findParentAttributes(XmlAttribute elementAttribute, AttributeProvider provider) {
+		boolean result = true;
+		for (Entry<String, XmlAttribute> entry : attributesMap.entrySet()) {
+			XmlAttribute parentAttrib = provider.getAttribute(entry.getKey());
+			if (!elementAttribute.contains(entry.getValue()) && !parentAttrib.contains(entry.getValue())) {
+				result = false;
+				break;
+			}
+		}
+		return result;
+	}
 }
