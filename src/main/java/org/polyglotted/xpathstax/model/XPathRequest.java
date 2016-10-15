@@ -44,7 +44,7 @@ public class XPathRequest {
 		List<String> values = new ArrayList<String>();
 		StringBuilder valueItemSb = new StringBuilder();
 		
-		// ignore in curly braces characters to handle xmlns naming. 
+		// ignore characters within curly braces to handle xmlns naming. 
 		boolean isInCurlyBrace = false;
 		for (int i = 0; i < this.request.length(); ++i) {
 			char ch = this.request.charAt(i);
