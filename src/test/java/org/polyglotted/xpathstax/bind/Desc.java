@@ -3,6 +3,7 @@ package org.polyglotted.xpathstax.bind;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
+@SuppressWarnings("unused")
 @XmlType
 public class Desc {
 

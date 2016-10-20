@@ -1,18 +1,18 @@
 package org.polyglotted.xpathstax.bind;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.polyglotted.xpathstax.bind.XmlBinderContext.ClassContext;
+import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import org.junit.Test;
-import org.polyglotted.xpathstax.bind.XmlBinderContext.ClassContext;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class XmlBinderContextTest {
 
     @Test
     public void testBinder() {
-        XmlBinderContext<Book> ctx = new XmlBinderContext<Book>(Book.class);
+        XmlBinderContext<Book> ctx = new XmlBinderContext<>(Book.class);
         assertNotNull(ctx);
 
         Map<String, Class<?>> types = ctx.getTypes();

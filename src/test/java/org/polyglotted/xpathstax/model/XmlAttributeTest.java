@@ -1,16 +1,13 @@
 package org.polyglotted.xpathstax.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.polyglotted.xpathstax.data.Value;
+import org.testng.annotations.Test;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.Test;
-import org.polyglotted.xpathstax.data.Value;
+import static org.testng.Assert.*;
 
 public class XmlAttributeTest {
 

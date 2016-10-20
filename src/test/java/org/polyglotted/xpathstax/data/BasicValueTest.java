@@ -1,9 +1,7 @@
 package org.polyglotted.xpathstax.data;
 
-import static java.text.DateFormat.getDateTimeInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.polyglotted.xpathstax.bind.Book.Genre;
+import org.testng.annotations.Test;
 
 import java.lang.Thread.State;
 import java.math.BigDecimal;
@@ -11,8 +9,8 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Test;
-import org.polyglotted.xpathstax.bind.Book.Genre;
+import static java.text.DateFormat.getDateTimeInstance;
+import static org.testng.Assert.*;
 
 public class BasicValueTest {
 
@@ -26,8 +24,8 @@ public class BasicValueTest {
     @Test
     public void testAsBigInteger() {
         assertNull(new BasicValue(null).asBigInteger(null));
-        assertEquals(BigInteger.valueOf(2l), new BasicValue(null).asBigInteger(BigInteger.valueOf(2l)));
-        assertEquals(BigInteger.valueOf(2l), new BasicValue(BigInteger.valueOf(2l)).asBigInteger(null));
+        assertEquals(BigInteger.valueOf(2L), new BasicValue(null).asBigInteger(BigInteger.valueOf(2L)));
+        assertEquals(BigInteger.valueOf(2L), new BasicValue(BigInteger.valueOf(2L)).asBigInteger(null));
     }
 
     @Test
@@ -40,7 +38,7 @@ public class BasicValueTest {
         assertEquals(date, new BasicValue(null).asDate(date));
         assertEquals(date, new BasicValue(date).asDate(null));
         assertNotNull(new BasicValue(getDateTimeInstance().format(date)).asDate(null));
-        
+
         Date date2 = new SimpleDateFormat(datePattern).parse("20-10-2010");
         assertEquals(date2, new BasicValue("20-10-2010").asDate(null, datePattern));
     }
@@ -52,8 +50,7 @@ public class BasicValueTest {
         assertEquals(State.RUNNABLE, new BasicValue(State.RUNNABLE).asEnum(State.class, null));
         assertEquals(State.RUNNABLE, new BasicValue("RUNNABLE").asEnum(State.class, null));
         assertNull(new BasicValue("RUNNING").asEnum(State.class, null));
-        
+
         assertEquals(Genre.Computer, new BasicValue("Computer Science").asEnum(Genre.class, null));
     }
-
 }

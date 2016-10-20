@@ -1,11 +1,8 @@
 package org.polyglotted.xpathstax.data;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.testng.annotations.Test;
 
-import org.junit.Test;
+import static org.testng.Assert.*;
 
 public class PrimitiveValueTest {
 
@@ -66,9 +63,9 @@ public class PrimitiveValueTest {
     public void testAsLong() {
         assertNull(new PrimitiveValue(null).asLong(null));
         assertEquals((short) 0, new PrimitiveValue(null).asLong());
-        assertEquals(Long.valueOf("2"), new PrimitiveValue(null).asLong(2l));
+        assertEquals(Long.valueOf("2"), new PrimitiveValue(null).asLong(2L));
 
-        assertEquals(Long.valueOf("2"), new PrimitiveValue(2l).asLong(null));
+        assertEquals(Long.valueOf("2"), new PrimitiveValue(2L).asLong(null));
         assertEquals(Long.valueOf("2"), new PrimitiveValue("2").asLong(null));
         assertEquals(Long.valueOf("2"), new PrimitiveValue(new Long("2")).asLong(null));
     }
@@ -94,5 +91,4 @@ public class PrimitiveValueTest {
         assertEquals(Double.valueOf("2"), new PrimitiveValue("2").asDouble(null));
         assertEquals(Double.valueOf("2"), new PrimitiveValue(new Double("2")).asDouble(null));
     }
-
 }

@@ -1,15 +1,15 @@
 package org.polyglotted.xpathstax.model;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.polyglotted.xpathstax.model.XmlAttribute.EMPTY;
-
-import org.junit.Test;
 import org.polyglotted.xpathstax.api.AttributeProvider;
+import org.testng.annotations.Test;
+
+import static org.polyglotted.xpathstax.model.XmlAttribute.EMPTY;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 public class XPathRequestTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void testInvalidChildRequest() {
         new XPathRequest("/response/*/documents");
     }
@@ -62,9 +62,9 @@ public class XPathRequestTest {
         String expected = "/response/documents/document/fields/field/value";
         String childElem = "/response/documents/document/fields/field/value/string";
         AttributeProvider provider = testProvider("/response/documents/document/fields/field",
-                        XmlAttribute.from("name='.id'"));
+            XmlAttribute.from("name='.id'"));
         AttributeProvider failProvider = testProvider("/response/documents/document/fields",
-                        XmlAttribute.from("name='.id'"));
+            XmlAttribute.from("name='.id'"));
 
         XPathRequest req = new XPathRequest("/response/documents/document/fields/field[@name='.id']/value");
 
@@ -74,14 +74,11 @@ public class XPathRequestTest {
     }
 
     private AttributeProvider testProvider(final String elem, final XmlAttribute attribute) {
-        return new AttributeProvider() {
-            @Override
-            public XmlAttribute getAttribute(String attribElem) {
-                if (elem.equals(attribElem)) {
-                    return attribute;
-                }
-                return EMPTY;
+        return attribElem -> {
+            if (elem.equals(attribElem)) {
+                return attribute;
             }
+            return EMPTY;
         };
     }
 }

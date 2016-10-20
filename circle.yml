@@ -12,6 +12,8 @@ dependencies:
 test:
   override:
     - mvn --settings .ci-settings.xml -Dassembly.skipAssembly=true verify
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/ && find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
 #deployment:
 #  release:
 #    branch: master

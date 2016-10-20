@@ -1,22 +1,18 @@
 package org.polyglotted.xpathstax.bind;
 
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlRootElement;
-
+@SuppressWarnings("unused")
 @XmlRootElement(name = "book")
 public class Book {
 
     @XmlEnum
     public enum Genre {
         @XmlEnumValue("Computer Science")
-        Computer, Fantasy, Romance, Horror, 
+        Computer, Fantasy, Romance, Horror,
         @XmlEnumValue("Science Fiction")
         SciFi
     }
