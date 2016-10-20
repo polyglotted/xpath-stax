@@ -28,9 +28,9 @@
     </developers>
 
     <properties>
-        <slf4j.version>[1.7.12,)</slf4j.version>
-        <guava.version>[18.0]</guava.version>
-        <woodstox.version>[4.4.1,)</woodstox.version>
+        <slf4j.version>1.7.12</slf4j.version>
+        <guava.version>18.0</guava.version>
+        <woodstox.version>4.4.1</woodstox.version>
         <logback.version>1.1.3</logback.version>
         <hamcrest.version>1.3</hamcrest.version>
         <testng.version>6.9.6</testng.version>
@@ -84,6 +84,10 @@
                 <exclusion>
                     <groupId>org.beanshell</groupId>
                     <artifactId>bsh</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
