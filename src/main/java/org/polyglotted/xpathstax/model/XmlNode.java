@@ -1,10 +1,10 @@
 package org.polyglotted.xpathstax.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.polyglotted.xpathstax.data.Value;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import org.polyglotted.xpathstax.data.Value;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @ThreadSafe
 public class XmlNode {
@@ -50,15 +50,12 @@ public class XmlNode {
             return false;
 
         XmlNode other = (XmlNode) obj;
-        if (path != null ? !path.equals(other.path) : other.path != null)
-            return false;
-
-        return true;
+        return path != null ? path.equals(other.path) : other.path == null;
     }
 
     @Override
     public int hashCode() {
-        return 31 * 1 + ((path == null) ? 0 : path.hashCode());
+        return 31 * ((path == null) ? 0 : path.hashCode());
     }
 
     @Override

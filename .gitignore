@@ -3,6 +3,7 @@
 
 # idea
 *.iml
+.idea/
 
 # build
 target/

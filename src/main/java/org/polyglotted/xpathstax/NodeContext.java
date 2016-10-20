@@ -1,19 +1,17 @@
 package org.polyglotted.xpathstax;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.polyglotted.xpathstax.model.XPathRequest.SLASH;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.concurrent.NotThreadSafe;
-
+import com.google.common.collect.Maps;
 import org.polyglotted.xpathstax.api.AttributeProvider;
 import org.polyglotted.xpathstax.api.NodeHandler;
 import org.polyglotted.xpathstax.model.XmlAttribute;
 import org.polyglotted.xpathstax.model.XmlNode;
 
-import com.google.common.collect.Maps;
+import javax.annotation.concurrent.NotThreadSafe;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.polyglotted.xpathstax.model.XPathRequest.SLASH;
 
 @NotThreadSafe
 class NodeContext implements AttributeProvider {
@@ -46,7 +44,7 @@ class NodeContext implements AttributeProvider {
         private final XmlNode node;
         private final List<NodeHandler> handlers;
 
-        public NodeData(String curElement, XmlAttribute attribute, List<NodeHandler> handlers) {
+        NodeData(String curElement, XmlAttribute attribute, List<NodeHandler> handlers) {
             this.node = new XmlNode(curElement, getName(curElement), attribute);
             this.handlers = handlers;
         }

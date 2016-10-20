@@ -2,6 +2,7 @@ package org.polyglotted.xpathstax.data;
 
 import java.util.regex.Pattern;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 abstract class AbstractValue {
 
     private static final Pattern NUMBER = Pattern.compile("\\d+(\\.\\d+)?");
@@ -45,7 +46,7 @@ abstract class AbstractValue {
 
     @Override
     public int hashCode() {
-        return 31 * 1 + ((data == null) ? 0 : data.hashCode());
+        return 31 * ((data == null) ? 0 : data.hashCode());
     }
 
     @Override
@@ -58,10 +59,7 @@ abstract class AbstractValue {
             return false;
 
         AbstractValue other = (AbstractValue) obj;
-        if (data != null ? !data.equals(other.data) : other.data != null)
-            return false;
-
-        return true;
+        return data != null ? data.equals(other.data) : other.data == null;
     }
 
     @Override

@@ -1,25 +1,20 @@
 package org.polyglotted.xpathstax.bind;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Maps.newHashMap;
-import static org.polyglotted.xpathstax.bind.ReflUtil.*;
+import com.google.common.annotations.VisibleForTesting;
+import org.polyglotted.xpathstax.data.Value;
+import org.polyglotted.xpathstax.model.XmlNode;
 
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.xml.bind.annotation.*;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Stack;
 
-import javax.annotation.concurrent.NotThreadSafe;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
+import static org.polyglotted.xpathstax.bind.ReflUtil.*;
 
-import org.polyglotted.xpathstax.data.Value;
-import org.polyglotted.xpathstax.model.XmlNode;
-
-import com.google.common.annotations.VisibleForTesting;
-
+@SuppressWarnings("WeakerAccess")
 @NotThreadSafe
 class XmlBinderContext<T> {
 
@@ -28,8 +23,8 @@ class XmlBinderContext<T> {
     private final Map<String, Class<?>> types = newHashMap();
     private final Map<Class<?>, ClassContext> contexts = newHashMap();
 
-    private final Stack<String> nameStack = new Stack<String>();
-    private final Stack<Object> newObjects = new Stack<Object>();
+    private final Stack<String> nameStack = new Stack<>();
+    private final Stack<Object> newObjects = new Stack<>();
 
     public XmlBinderContext(Class<T> tClass) {
         rootClass = validateRoot(tClass);

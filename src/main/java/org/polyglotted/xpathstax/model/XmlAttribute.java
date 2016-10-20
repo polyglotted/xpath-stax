@@ -1,21 +1,19 @@
 package org.polyglotted.xpathstax.model;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import org.codehaus.stax2.XMLStreamReader2;
+import org.polyglotted.xpathstax.data.Value;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.concurrent.ThreadSafe;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.codehaus.stax2.XMLStreamReader2;
-import org.polyglotted.xpathstax.data.Value;
-
-import com.google.common.base.Function;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
-
+@SuppressWarnings("WeakerAccess")
 @ThreadSafe
 public class XmlAttribute {
 
@@ -104,21 +102,16 @@ public class XmlAttribute {
     }
 
     public Iterable<Entry<String, Value>> iterate() {
-        return Iterables.transform(NPSPACE_SPLITTER.split(buffer), new Function<String, Entry<String, Value>>() {
-            @Override
-            public Entry<String, Value> apply(String input) {
-                return new AttrEntry(input);
-            }
-        });
+        return Iterables.transform(NPSPACE_SPLITTER.split(buffer), AttrEntry::new);
     }
 
     @Override
     public String toString() {
         return buffer.toString();
     }
-    
+
     private static String buildKey(String name) {
-        return new StringBuilder().append(NP_SPACE).append(checkNotNull(name)).append(EQUALS).toString();
+        return NP_SPACE + checkNotNull(name) + EQUALS;
     }
 
     private static String buildValue(String value) {

@@ -1,22 +1,20 @@
 package org.polyglotted.xpathstax.bind;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import org.polyglotted.xpathstax.data.Value;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.polyglotted.xpathstax.data.Value;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 class ReflUtil {
     private static final String DEFAULT_NAME = "##default";
@@ -31,7 +29,7 @@ class ReflUtil {
         return type.isPrimitive() || type.equals(String.class);
     }
 
-    static Class<? extends Object> getFieldClass(Field field) {
+    static Class<?> getFieldClass(Field field) {
         return isCollection(field) ? getParametricClass(field) : field.getType();
     }
 
@@ -54,17 +52,17 @@ class ReflUtil {
     }
 
     static String getRootElementName(Class<?> clazz) {
-        XmlRootElement element = (XmlRootElement) clazz.getAnnotation(XmlRootElement.class);
+        XmlRootElement element = clazz.getAnnotation(XmlRootElement.class);
         return !DEFAULT_NAME.equals(element.name()) ? element.name() : clazz.getSimpleName();
     }
 
     static String getElementName(Field field) {
-        XmlElement element = (XmlElement) field.getAnnotation(XmlElement.class);
+        XmlElement element = field.getAnnotation(XmlElement.class);
         return !DEFAULT_NAME.equals(element.name()) ? element.name() : field.getName();
     }
 
     static String getAttributeName(Field field) {
-        XmlAttribute attribute = (XmlAttribute) field.getAnnotation(XmlAttribute.class);
+        XmlAttribute attribute = field.getAnnotation(XmlAttribute.class);
         return !DEFAULT_NAME.equals(attribute.name()) ? attribute.name() : field.getName();
     }
 
@@ -123,13 +121,13 @@ class ReflUtil {
         @SuppressWarnings("unchecked")
         Collection<Object> coll = (Collection<Object>) (field.get(lastObject));
         if (coll == null) {
-            coll = createColl(lastObject, field);
+            coll = createColl(field);
             field.set(lastObject, coll);
         }
         return coll;
     }
 
-    private static Collection<Object> createColl(Object lastObject, Field field) {
+    private static Collection<Object> createColl(Field field) {
         Class<?> type = field.getType();
         if (type.isAssignableFrom(ArrayList.class)) {
             return Lists.newArrayList();

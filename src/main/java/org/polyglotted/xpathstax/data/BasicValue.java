@@ -1,7 +1,7 @@
 package org.polyglotted.xpathstax.data;
 
-import static java.text.DateFormat.getDateTimeInstance;
-
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -11,9 +11,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
+import static java.text.DateFormat.getDateTimeInstance;
 
+@SuppressWarnings("WeakerAccess")
 public class BasicValue extends PrimitiveValue {
 
     public BasicValue(Object data) {

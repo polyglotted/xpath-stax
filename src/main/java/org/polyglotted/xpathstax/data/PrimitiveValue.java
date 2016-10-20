@@ -1,5 +1,6 @@
 package org.polyglotted.xpathstax.data;
 
+@SuppressWarnings("WeakerAccess")
 public class PrimitiveValue extends AbstractValue {
 
     public PrimitiveValue(Object data) {

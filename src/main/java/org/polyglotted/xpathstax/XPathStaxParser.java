@@ -1,15 +1,8 @@
 package org.polyglotted.xpathstax;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.polyglotted.xpathstax.model.XPathRequest.SLASH;
-
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.stream.events.XMLEvent;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.io.Closeables;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 import org.polyglotted.xpathstax.api.NodeHandler;
@@ -17,10 +10,16 @@ import org.polyglotted.xpathstax.bind.NodeConverter;
 import org.polyglotted.xpathstax.model.XPathRequest;
 import org.polyglotted.xpathstax.model.XmlAttribute;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.io.Closeables;
+import javax.xml.stream.events.XMLEvent;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.polyglotted.xpathstax.model.XPathRequest.SLASH;
+
+@SuppressWarnings("WeakerAccess")
 public class XPathStaxParser {
 
     private static final XMLInputFactory2 factory = createFactory();
@@ -40,30 +39,30 @@ public class XPathStaxParser {
         try {
             XMLStreamReader2 xmlr = (XMLStreamReader2) factory.createXMLStreamReader(inputStream);
             String curElement = "";
+            @SuppressWarnings("UnusedAssignment")
             int eventType = xmlr.getEventType();
             while (xmlr.hasNext()) {
                 eventType = xmlr.next();
 
                 switch (eventType) {
-                case XMLEvent.START_ELEMENT:
-                    curElement = curElement + SLASH + getName(xmlr);
-                    processStartElement(xmlr, context, curElement);
-                    break;
+                    case XMLEvent.START_ELEMENT:
+                        curElement = curElement + SLASH + getName(xmlr);
+                        processStartElement(xmlr, context, curElement);
+                        break;
 
-                case XMLEvent.CHARACTERS:
-                    context.updateText(curElement,
-                        new String(xmlr.getTextCharacters(), xmlr.getTextStart(), xmlr.getTextLength()));
-                    break;
+                    case XMLEvent.CHARACTERS:
+                        context.updateText(curElement,
+                            new String(xmlr.getTextCharacters(), xmlr.getTextStart(), xmlr.getTextLength()));
+                        break;
 
-                case XMLEvent.END_ELEMENT:
-                    processEndElement(xmlr, context, curElement);
-                    curElement = curElement.substring(0, curElement.lastIndexOf(SLASH + getName(xmlr)));
-                    break;
+                    case XMLEvent.END_ELEMENT:
+                        processEndElement(context, curElement);
+                        curElement = curElement.substring(0, curElement.lastIndexOf(SLASH + getName(xmlr)));
+                        break;
                 }
             }
         } catch (Exception ex) {
             throw new RuntimeException("parse failed", ex);
-
         } finally {
             Closeables.closeQuietly(inputStream);
         }
@@ -84,7 +83,7 @@ public class XPathStaxParser {
         context.addHandlers(curElement, attribute, handlers);
     }
 
-    private void processEndElement(XMLStreamReader2 xmlr, NodeContext context, String curElement) {
+    private void processEndElement(NodeContext context, String curElement) {
         if (!SLASH.equals(curElement)) {
             context.sendUpdates(curElement);
         }
